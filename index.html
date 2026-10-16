@@ -1,0 +1,1993 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+  /* ── BONUS GOAL GAME ── */
+  .gm-wrap{width:100%;max-width:340px;margin:28px auto 0;text-align:center;}
+  .gm-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;color:var(--accent);margin-bottom:4px;}
+  .gm-level{font-family:'Nunito',sans-serif;font-weight:900;font-size:0.9rem;color:var(--fg);margin-bottom:8px;}
+  .gm-sub{font-size:0.8rem;color:var(--subtle);margin-bottom:10px;}
+  #gm-canvas{width:100%;height:auto;display:block;border-radius:16px;border:1.5px solid var(--border);background:var(--card2);touch-action:manipulation;}
+  .gm-starter{margin-top:10px;width:100%;background:#38BDF8;color:#0F172A;border:none;border-radius:12px;padding:14px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;cursor:pointer;touch-action:manipulation;transition:transform .1s;}
+  .gm-starter{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+  .gm-starter:active{transform:scale(0.97);}
+  .gm-weapons{display:flex;gap:8px;margin-top:8px;}
+  .gm-wbtn{flex:1;background:transparent;border:2px solid;border-radius:12px;padding:11px 6px;font-family:'Nunito',sans-serif;font-weight:900;font-size:0.92rem;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .1s,opacity .15s;}
+  .gm-wbtn:active{transform:scale(0.96);}
+  .gm-wbtn.bomb{color:#F59E0B;border-color:#F59E0B;}
+  .gm-wbtn.nuke{color:#4ADE80;border-color:#4ADE80;}
+  .gm-wbtn.empty{opacity:0.5;}
+  .gm-ctrls{display:flex;gap:8px;justify-content:center;margin-bottom:8px;}
+  .gm-ibtn{position:relative;width:56px;height:40px;border-radius:10px;border:1.5px solid var(--border);background:transparent;font-size:1.2rem;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:opacity .15s,transform .1s;}
+  .gm-ibtn:active{transform:scale(0.94);}
+  .gm-ibtn.off{opacity:0.35;}
+  .gm-ibtn .lock{position:absolute;right:3px;bottom:1px;font-size:0.6rem;}
+  .gm-start{margin-top:10px;width:100%;background:#22C55E;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.05rem;cursor:pointer;touch-action:manipulation;transition:transform .1s;}
+  .gm-start:active{transform:scale(0.97);}
+  .vip-link{display:block;background:#F59E0B;color:#0F172A;text-decoration:none;border-radius:10px;padding:12px;font-family:'Nunito',sans-serif;font-weight:900;font-size:0.95rem;margin-bottom:8px;}
+  .gm-shop{margin-top:8px;width:100%;background:transparent;border:1.5px solid #334155;color:#94A3B8;border-radius:10px;padding:9px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.85rem;cursor:pointer;touch-action:manipulation;}
+</style></head><body>
+<title>Twosome Quiz Game</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Lato:wght@400;700&display=swap">
+
+<style>
+  :root {
+    --bg: #0F172A;
+    --card: #1E293B;
+    --card2: #263248;
+    --fg: #F1F5F9;
+    --subtle: #94A3B8;
+    --accent: #38BDF8;
+    --correct: #22C55E;
+    --wrong: #EF4444;
+    --border: #334155;
+    --easy: #22C55E;
+    --normal: #38BDF8;
+    --hard: #F59E0B;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F0F9FF; --card: #FFFFFF; --card2: #E0F2FE;
+      --fg: #0F172A; --subtle: #64748B; --accent: #0284C7;
+      --correct: #16A34A; --wrong: #DC2626; --border: #BAE6FD;
+      --easy: #16A34A; --normal: #0284C7; --hard: #D97706;
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F0F9FF; --card: #FFFFFF; --card2: #E0F2FE;
+    --fg: #0F172A; --subtle: #64748B; --accent: #0284C7;
+    --correct: #16A34A; --wrong: #DC2626; --border: #BAE6FD;
+    --easy: #16A34A; --normal: #0284C7; --hard: #D97706;
+    color-scheme: light;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: 'Lato', system-ui, sans-serif; font-size: 1rem;
+    min-height: 100%;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0;
+  }
+  .screen {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh; padding-block: 32px;
+  }
+  .brand {
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 900;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  /* ── ACCOUNT SCREEN ── */
+  #account-screen { text-align: center; }
+  .account-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 36px 32px 28px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  }
+  .account-brand-icon { font-size: 3rem; margin-bottom: 8px; display: block;
+    animation: bounce 1.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .account-brand-icon { animation: none; } }
+  .account-box .brand { font-size: 1.2rem; margin-bottom: 4px; }
+  .account-box .brand-tagline {
+    color: var(--subtle); font-size: 0.82rem; margin-bottom: 24px;
+  }
+
+  /* Tab switcher */
+  .acc-tabs {
+    display: flex; gap: 0; margin-bottom: 24px;
+    background: var(--card2); border-radius: 10px; padding: 4px;
+    position: relative;
+  }
+  .acc-tab {
+    flex: 1; background: transparent; border: none;
+    border-radius: 8px; padding: 9px 0;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.92rem;
+    color: var(--subtle); cursor: pointer; transition: color 0.2s;
+    position: relative; z-index: 1;
+  }
+  .acc-tab.active { color: var(--fg); }
+  .acc-tab-slider {
+    position: absolute; top: 4px; bottom: 4px;
+    width: calc(50% - 4px); background: var(--card);
+    border-radius: 7px; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
+    left: 4px;
+  }
+  .acc-tab-slider.right { transform: translateX(calc(100% + 4px)); }
+
+  /* Form fields */
+  .acc-field { margin-bottom: 16px; text-align: left; }
+  .acc-field label {
+    display: block; font-size: 0.8rem; font-weight: 700;
+    color: var(--subtle); margin-bottom: 6px; letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .acc-field-row {
+    display: flex; align-items: center;
+    background: var(--card2); border: 1.5px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .acc-field-row:focus-within { border-color: var(--accent); }
+  .acc-field-row input {
+    flex: 1; background: transparent; border: none; outline: none;
+    padding: 12px 14px; color: var(--fg); font-family: 'Lato', sans-serif;
+    font-size: 0.97rem;
+  }
+  .acc-field-row input::placeholder { color: var(--subtle); }
+  .pw-toggle {
+    background: transparent; border: none; cursor: pointer;
+    padding: 0 14px; font-size: 1.1rem; color: var(--subtle);
+    transition: color 0.15s; line-height: 1;
+  }
+  .pw-toggle:hover { color: var(--fg); }
+
+  .acc-error {
+    background: color-mix(in srgb, var(--wrong) 15%, transparent);
+    border: 1px solid var(--wrong); border-radius: 8px;
+    padding: 9px 14px; color: var(--wrong);
+    font-size: 0.84rem; font-weight: 700; margin-bottom: 14px;
+    display: none;
+  }
+  .acc-error.show { display: block; }
+
+  .acc-submit {
+    width: 100%; background: var(--accent); color: #fff; border: none;
+    border-radius: 12px; padding: 14px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 900;
+    cursor: pointer; transition: transform 0.1s, opacity 0.1s;
+    letter-spacing: 0.02em; margin-bottom: 4px;
+  }
+  .acc-submit:hover { opacity: 0.88; transform: translateY(-2px); }
+  .acc-submit:active { transform: translateY(0); }
+
+  .acc-footer {
+    color: var(--subtle); font-size: 0.74rem; margin-top: 20px;
+    line-height: 1.5;
+  }
+
+  /* ── USER CHIP (top center) ── */
+  .user-chip {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top, 14px));
+    left: 50%; transform: translateX(-50%);
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 100px; padding: 6px 14px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.85rem;
+    color: var(--fg); cursor: pointer; z-index: 100;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 140px;
+    transition: border-color 0.15s, transform 0.1s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .user-chip:hover { border-color: var(--accent); transform: translateX(-50%) scale(1.05); }
+
+  /* ── PROFILE MODAL ── */
+  .profile-modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 300; align-items: center; justify-content: center;
+  }
+  .profile-modal-bg.open { display: flex; }
+  .profile-modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px 24px; max-width: 320px; width: 90%;
+    text-align: center;
+  }
+  .profile-modal .pm-avatar {
+    font-size: 3rem; margin-bottom: 8px; display: block;
+  }
+  .profile-modal .pm-username {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+  .profile-modal .pm-rank {
+    font-size: 0.9rem; color: var(--subtle); margin-bottom: 20px;
+  }
+  .profile-stats {
+    display: flex; gap: 12px; justify-content: center; margin-bottom: 22px;
+  }
+  .profile-stat {
+    background: var(--card2); border-radius: 12px; padding: 12px 18px;
+    text-align: center; flex: 1;
+  }
+  .profile-stat .ps-val {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .profile-stat .ps-lbl {
+    font-size: 0.75rem; color: var(--subtle); margin-top: 2px;
+  }
+  .pm-logout {
+    width: 100%; background: var(--wrong); color: #fff; border: none;
+    border-radius: 10px; padding: 12px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem;
+    cursor: pointer; margin-bottom: 8px; transition: opacity 0.15s;
+  }
+  .pm-logout:hover { opacity: 0.85; }
+  .pm-close {
+    width: 100%; background: none; border: 1px solid var(--border);
+    color: var(--subtle); border-radius: 10px; padding: 11px;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  /* ── START SCREEN ── */
+  #start-screen { text-align: center; }
+  .start-icon {
+    font-size: 4rem; margin-bottom: 12px; display: block;
+    animation: bounce 1.6s ease-in-out infinite;
+  }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  @media (prefers-reduced-motion: reduce) { .start-icon { animation: none; } }
+  #start-screen h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(2rem, 8vw, 3rem); font-weight: 900;
+    margin: 0 0 10px; text-wrap: balance; line-height: 1.1;
+  }
+  #start-screen h1 span { color: var(--accent); }
+  #start-screen > p {
+    color: var(--subtle); max-width: 380px; margin: 0 auto 32px;
+    line-height: 1.6; text-wrap: balance;
+  }
+
+  /* ── LEVEL CARDS ── */
+  .level-grid {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    justify-content: center; margin-bottom: 12px; width: 100%; max-width: 560px;
+  }
+  .level-card {
+    flex: 1 1 140px; max-width: 170px;
+    background: var(--card); border: 2.5px solid var(--border);
+    border-radius: 16px; padding: 20px 12px 16px;
+    cursor: pointer; text-align: center;
+    transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .level-card:hover { transform: translateY(-4px); }
+  .level-card.selected { box-shadow: 0 0 0 3px currentColor; }
+  .level-card[data-level="easy"]   { --lc: var(--easy); }
+  .level-card[data-level="normal"] { --lc: var(--normal); }
+  .level-card[data-level="hard"]   { --lc: var(--hard); }
+  .level-card:hover, .level-card.selected { border-color: var(--lc); }
+  .level-icon { font-size: 2rem; }
+  .level-name {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+    color: var(--lc);
+  }
+  .level-desc { font-size: 0.78rem; color: var(--subtle); line-height: 1.4; }
+  .level-badge {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 3px 10px;
+    font-size: 0.75rem; font-weight: 700; color: var(--lc);
+    margin-top: 4px;
+  }
+
+  .start-hint { color: var(--subtle); font-size: 0.82rem; margin-bottom: 20px; }
+
+  /* ── BUTTONS ── */
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 12px; padding: 16px 40px;
+    font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 900;
+    cursor: pointer; transition: transform 0.1s, opacity 0.1s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: var(--card); color: var(--fg);
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 13px 28px; font-family: 'Nunito', sans-serif;
+    font-size: 1rem; font-weight: 800; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz-screen { width: 100%; max-width: 600px; }
+  .progress-bar-wrap {
+    width: 100%; height: 6px; background: var(--card2);
+    border-radius: 100px; margin-bottom: 24px; overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 100px; transition: width 0.4s ease;
+  }
+  .bar-easy   { background: var(--easy); }
+  .bar-normal { background: var(--normal); }
+  .bar-hard   { background: var(--hard); }
+
+  .quiz-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; width: 100%;
+  }
+  .q-counter {
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--subtle);
+  }
+  .level-pill {
+    font-size: 0.72rem; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 3px 10px;
+    border-radius: 100px; border: 1px solid currentColor;
+  }
+  .lp-easy   { color: var(--easy); }
+  .lp-normal { color: var(--normal); }
+  .lp-hard   { color: var(--hard); }
+  .score-badge {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 4px 14px;
+    font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 900;
+    color: var(--accent); font-variant-numeric: tabular-nums;
+  }
+  .question-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 24px 24px;
+    margin-bottom: 20px; width: 100%;
+  }
+  .question-card p {
+    font-family: 'Nunito', sans-serif; font-size: 1.15rem; font-weight: 800;
+    line-height: 1.45; margin: 0; text-wrap: balance;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 16px; }
+  .opt-btn {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    font-family: 'Lato', sans-serif; font-size: 0.97rem; font-weight: 700;
+    color: var(--fg); cursor: pointer; text-align: left;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--card2); transform: translateX(3px); }
+  .opt-btn .opt-letter {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px; background: var(--card2);
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.85rem;
+    flex-shrink: 0; color: var(--subtle); transition: background 0.15s, color 0.15s;
+  }
+  .opt-btn.correct { border-color: var(--correct); background: color-mix(in srgb, var(--correct) 12%, var(--card)); }
+  .opt-btn.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.wrong   { border-color: var(--wrong);   background: color-mix(in srgb, var(--wrong)   12%, var(--card)); }
+  .opt-btn.wrong .opt-letter   { background: var(--wrong);   color: #fff; }
+  .opt-btn:disabled { cursor: default; transform: none; }
+  .feedback-row {
+    min-height: 28px; font-size: 0.9rem; font-weight: 700;
+    margin-bottom: 16px; color: var(--subtle); text-align: center;
+  }
+  .feedback-row.good { color: var(--correct); }
+  .feedback-row.bad  { color: var(--wrong); }
+  .next-btn-wrap { width: 100%; display: flex; justify-content: flex-end; }
+
+  /* ── RESULTS ── */
+  #result-screen { text-align: center; }
+  .trophy { font-size: 3.5rem; margin-bottom: 12px; display: block; }
+  #result-screen h2 {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(1.6rem, 6vw, 2.4rem); font-weight: 900;
+    margin: 0 0 8px; text-wrap: balance;
+  }
+  .score-display {
+    font-family: 'Nunito', sans-serif; font-size: 3.5rem; font-weight: 900;
+    color: var(--accent); line-height: 1; margin: 16px 0 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-label { color: var(--subtle); font-size: 0.9rem; margin-bottom: 8px; }
+  .level-result-badge {
+    display: inline-block; border-radius: 100px; padding: 4px 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.82rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    border: 1.5px solid currentColor; margin-bottom: 20px;
+  }
+  .result-msg {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; max-width: 420px;
+    margin: 0 auto 28px; font-size: 0.95rem; line-height: 1.6; color: var(--subtle);
+  }
+  .result-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 36px; }
+  .opinion-cta {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; max-width: 420px; width: 100%; text-align: center;
+  }
+  .opinion-cta p { margin: 0 0 12px; font-size: 0.92rem; color: var(--subtle); }
+  .opinion-cta a {
+    display: inline-block; background: var(--accent); color: #fff;
+    text-decoration: none; border-radius: 10px; padding: 11px 24px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem;
+    transition: opacity 0.15s;
+  }
+  .opinion-cta a:hover { opacity: 0.85; }
+  .footer-note {
+    margin-top: 32px; color: var(--subtle); font-size: 0.78rem;
+    letter-spacing: 0.05em; text-align: center;
+  }
+  .footer-note strong { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  /* ── COIN WALLET ── */
+  .coin-wallet {
+    position: fixed; top: max(14px, env(safe-area-inset-top, 14px)); right: max(16px, env(safe-area-inset-right, 16px));
+    background: var(--card); border: 2px solid #F59E0B;
+    border-radius: 100px; padding: 6px 14px 6px 10px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.92rem;
+    color: #F59E0B; z-index: 100; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(245,158,11,0.18);
+    transition: transform 0.15s;
+  }
+  .coin-wallet:hover { transform: scale(1.06); }
+  .coin-wallet .coin-icon { font-size: 1.1rem; }
+  .coin-wallet .coin-count { font-variant-numeric: tabular-nums; min-width: 28px; }
+
+  /* coin earned pop-up */
+  .coin-pop {
+    position: fixed; top: max(60px, calc(env(safe-area-inset-top,0px) + 60px)); right: max(16px, env(safe-area-inset-right,16px));
+    background: #F59E0B; color: #fff;
+    border-radius: 100px; padding: 5px 14px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.88rem;
+    z-index: 101; opacity: 0; pointer-events: none;
+    transform: translateY(0); transition: opacity 0.3s, transform 0.3s;
+  }
+  .coin-pop.show { opacity: 1; transform: translateY(-6px); }
+
+  /* wallet modal */
+  .wallet-modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .wallet-modal-bg.open { display: flex; }
+  .wallet-modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px 24px; max-width: 340px; width: 90%;
+    text-align: center;
+  }
+  .wallet-modal h3 {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.3rem;
+    margin: 0 0 4px; color: #F59E0B;
+  }
+  .wallet-total {
+    font-family: 'Nunito', sans-serif; font-size: 3rem; font-weight: 900;
+    color: #F59E0B; line-height: 1; margin: 12px 0 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .wallet-sub { color: var(--subtle); font-size: 0.85rem; margin-bottom: 20px; }
+  .wallet-ranks { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; text-align: left; }
+  .wallet-rank {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card2); border-radius: 10px; padding: 10px 14px;
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .wallet-rank .wr-icon { font-size: 1.2rem; }
+  .wallet-rank .wr-label { flex: 1; color: var(--subtle); }
+  .wallet-rank .wr-coins { color: #F59E0B; font-family: 'Nunito', sans-serif; font-weight: 900; }
+  .wallet-rank.achieved .wr-label { color: var(--fg); }
+  .wallet-close {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 12px 28px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+    cursor: pointer;
+  }
+
+  /* ── HAND / HINT BADGE ── */
+  .hand-badge {
+    position: fixed; top: max(14px, env(safe-area-inset-top, 14px));
+    left: max(16px, env(safe-area-inset-left, 16px));
+    background: var(--card); border: 2px solid #A78BFA;
+    border-radius: 100px; padding: 6px 14px 6px 10px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.92rem;
+    color: #A78BFA; z-index: 100; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(167,139,250,0.18);
+    transition: transform 0.15s;
+  }
+  .hand-badge:hover { transform: scale(1.06); }
+  .hand-badge .hand-icon { font-size: 1.1rem; }
+  .hand-badge .hand-count { font-variant-numeric: tabular-nums; min-width: 18px; }
+
+  /* hand-used glow on correct answer */
+  @keyframes hintGlow {
+    0%   { box-shadow: 0 0 0 0 rgba(167,139,250,0.7); }
+    70%  { box-shadow: 0 0 0 12px rgba(167,139,250,0); }
+    100% { box-shadow: 0 0 0 0 rgba(167,139,250,0); }
+  }
+  .opt-btn.hint-reveal { animation: hintGlow 0.7s ease-out; }
+
+  /* in-quiz hand button */
+  .use-hand-btn {
+    background: transparent; border: 1.5px solid #A78BFA; color: #A78BFA;
+    border-radius: 10px; padding: 8px 18px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.88rem;
+    cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .use-hand-btn:hover:not(:disabled) { background: rgba(167,139,250,0.1); }
+  .use-hand-btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* buy hands modal */
+  .buy-modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .buy-modal-bg.open { display: flex; }
+  .buy-modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 28px 24px; max-width: 320px; width: 90%;
+    text-align: center;
+  }
+  .buy-modal h3 {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.2rem;
+    margin: 0 0 6px; color: #A78BFA;
+  }
+  .buy-modal .bm-sub { color: var(--subtle); font-size: 0.85rem; margin-bottom: 20px; }
+  .buy-option {
+    background: var(--card2); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .buy-option:hover { border-color: #A78BFA; }
+  .buy-option .bo-icon { font-size: 1.5rem; }
+  .buy-option .bo-info { flex: 1; text-align: left; }
+  .buy-option .bo-label { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem; }
+  .buy-option .bo-cost { font-size: 0.8rem; color: #F59E0B; font-weight: 700; }
+  .buy-option .bo-btn {
+    background: #A78BFA; color: #fff; border: none;
+    border-radius: 8px; padding: 7px 14px;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .buy-modal .bm-cancel {
+    background: none; border: 1px solid var(--border); color: var(--subtle);
+    border-radius: 10px; padding: 10px 24px; margin-top: 6px;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem;
+    cursor: pointer; width: 100%;
+  }
+  .buy-modal .bm-balance {
+    font-size: 0.82rem; color: var(--subtle); margin-bottom: 16px;
+  }
+  .buy-modal .bm-balance span { color: #F59E0B; font-weight: 900; }
+</style>
+
+<!-- ══ HAND BADGE (fixed top-left) ══ -->
+<div class="hand-badge" onclick="openBuyHands()" title="Your hints / hands">
+  <span class="hand-icon">🖐️</span>
+  <span class="hand-count" id="hand-count">0</span>
+</div>
+
+<!-- ══ USER CHIP (fixed top-center) ══ -->
+<div class="user-chip" id="user-chip" onclick="openProfile()" hidden>
+  👤 <span id="user-chip-name"></span>
+</div>
+
+<!-- ══ BUY HANDS MODAL ══ -->
+<div class="buy-modal-bg" id="buy-modal-bg" onclick="closeBuyHands()">
+  <div class="buy-modal" onclick="event.stopPropagation()">
+    <h3>🖐️ Hands (Hints)</h3>
+    <p class="bm-sub">Stuck on a question? Use a Hand to reveal the correct answer.</p>
+    <div class="bm-balance">Your coins: <span id="buy-coin-balance">0</span> 🪙</div>
+    <div class="buy-option" onclick="buyHands(1)">
+      <span class="bo-icon">🖐️</span>
+      <div class="bo-info">
+        <div class="bo-label">1 Hand</div>
+        <div class="bo-cost">30 🪙 coins</div>
+      </div>
+      <button class="bo-btn" onclick="event.stopPropagation();buyHands(1)">Buy</button>
+    </div>
+    <div class="buy-option" onclick="buyHands(3)">
+      <span class="bo-icon">🖐️🖐️🖐️</span>
+      <div class="bo-info">
+        <div class="bo-label">3 Hands</div>
+        <div class="bo-cost">80 🪙 coins <span style="color:var(--correct);font-size:0.75rem;">Save 10!</span></div>
+      </div>
+      <button class="bo-btn" onclick="event.stopPropagation();buyHands(3)">Buy</button>
+    </div>
+    <button class="bm-cancel" onclick="closeBuyHands()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ VIP MODAL ══ -->
+<div class="buy-modal-bg" id="vip-modal-bg" onclick="closeVipModal()">
+  <div class="buy-modal" onclick="event.stopPropagation()" style="max-width:420px;width:92%;">
+    <h3 style="color:#F59E0B;">👑 Get VIP</h3>
+    <p class="bm-sub" id="vip-sub">Restart is for VIP players. Send us your opinion to get VIP!</p>
+    <button class="vip-link" id="vip-open-btn" onclick="openVipForm()" style="width:100%;border:none;cursor:pointer;">Send My Opinion 🌱 → Get VIP</button>
+    <div id="vip-form-wrap" style="display:none;">
+      <div style="color:#94A3B8;font-size:0.8rem;margin-bottom:8px;">Fill in the form and press <b>Submit</b>. VIP unlocks only after it is sent.</div>
+      <iframe id="vip-frame" title="Opinion form" style="width:100%;height:55vh;border:0;border-radius:10px;background:#fff;"></iframe>
+    </div>
+    <button class="bm-cancel" onclick="closeVipModal()">Not now</button>
+  </div>
+</div>
+
+<!-- ══ WEAPON SHOP MODAL ══ -->
+<div class="buy-modal-bg" id="weapon-modal-bg" onclick="closeWeaponShop()">
+  <div class="buy-modal" onclick="event.stopPropagation()">
+    <h3 style="color:#F59E0B;">💣 Weapon Shop</h3>
+    <p class="bm-sub">Bombs remove 3 defenders. Nuclear removes 5 defenders.</p>
+    <div class="bm-balance">Your coins: <span id="weapon-coin-balance">0</span> 🪙</div>
+    <div class="buy-option" onclick="buyWeapon('bomb')">
+      <span class="bo-icon">💣</span>
+      <div class="bo-info">
+        <div class="bo-label">3 Bombs</div>
+        <div class="bo-cost">100 🪙 coins</div>
+      </div>
+      <button class="bo-btn" onclick="event.stopPropagation();buyWeapon('bomb')">Buy</button>
+    </div>
+    <div class="buy-option" onclick="buyWeapon('nuke')">
+      <span class="bo-icon">☢️</span>
+      <div class="bo-info">
+        <div class="bo-label">5 Nuclear</div>
+        <div class="bo-cost">200 🪙 coins</div>
+      </div>
+      <button class="bo-btn" onclick="event.stopPropagation();buyWeapon('nuke')">Buy</button>
+    </div>
+    <button class="bm-cancel" onclick="closeWeaponShop()">Close</button>
+  </div>
+</div>
+
+<!-- ══ COIN WALLET BADGE (fixed, always visible) ══ -->
+<div class="coin-wallet" onclick="openWallet()" title="Your total coins">
+  <span class="coin-icon">🪙</span>
+  <span class="coin-count" id="wallet-count">0</span>
+</div>
+<div class="coin-pop" id="coin-pop"></div>
+
+<!-- ══ WALLET MODAL ══ -->
+<div class="wallet-modal-bg" id="wallet-modal-bg" onclick="closeWallet()">
+  <div class="wallet-modal" onclick="event.stopPropagation()">
+    <h3>🪙 Coin Wallet</h3>
+    <div class="wallet-total" id="modal-total">0</div>
+    <div class="wallet-sub">total coins earned</div>
+    <div class="wallet-ranks" id="wallet-ranks"></div>
+    <button class="wallet-close" onclick="closeWallet()">Close</button>
+  </div>
+</div>
+
+<!-- ══ PROFILE MODAL ══ -->
+<div class="profile-modal-bg" id="profile-modal-bg" onclick="closeProfile()">
+  <div class="profile-modal" onclick="event.stopPropagation()">
+    <span class="pm-avatar">👤</span>
+    <div class="pm-username" id="pm-username"></div>
+    <div class="pm-rank" id="pm-rank"></div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="ps-val" id="pm-coins" style="color:#F59E0B;">0</div>
+        <div class="ps-lbl">🪙 Coins</div>
+      </div>
+      <div class="profile-stat">
+        <div class="ps-val" id="pm-hands" style="color:#A78BFA;">0</div>
+        <div class="ps-lbl">🖐️ Hands</div>
+      </div>
+    </div>
+    <button class="pm-logout" onclick="logOut()">Log Out</button>
+    <button class="pm-close" onclick="closeProfile()">Close</button>
+  </div>
+</div>
+
+<!-- ══ ACCOUNT SCREEN ══ -->
+<div class="screen" id="account-screen">
+  <div class="account-box">
+    <span class="account-brand-icon">🧠</span>
+    <div class="brand">Twosome</div>
+    <div class="brand-tagline">Test your mind. Track your growth.</div>
+
+    <div class="acc-tabs" role="tablist">
+      <div class="acc-tab-slider" id="acc-tab-slider"></div>
+      <button class="acc-tab active" id="tab-login" onclick="switchTab('login')" role="tab" aria-selected="true">Log In</button>
+      <button class="acc-tab" id="tab-signup" onclick="switchTab('signup')" role="tab" aria-selected="false">Sign Up</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="login-form">
+      <div class="acc-field">
+        <label for="login-username">Username</label>
+        <div class="acc-field-row">
+          <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" autocapitalize="none">
+        </div>
+      </div>
+      <div class="acc-field">
+        <label for="login-password">Password</label>
+        <div class="acc-field-row">
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password">
+          <button class="pw-toggle" onclick="togglePw('login-password', this)" type="button" aria-label="Show password">👁️</button>
+        </div>
+      </div>
+      <div class="acc-error" id="login-error"></div>
+      <button class="acc-submit" onclick="doLogin()">Log In</button>
+    </div>
+
+    <!-- Signup form -->
+    <div id="signup-form" hidden>
+      <div class="acc-field">
+        <label for="signup-username">Choose a Username</label>
+        <div class="acc-field-row">
+          <input type="text" id="signup-username" placeholder="Pick a username" autocomplete="username" autocapitalize="none">
+        </div>
+      </div>
+      <div class="acc-field">
+        <label for="signup-password">Choose a Password</label>
+        <div class="acc-field-row">
+          <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="new-password">
+          <button class="pw-toggle" onclick="togglePw('signup-password', this)" type="button" aria-label="Show password">👁️</button>
+        </div>
+      </div>
+      <div class="acc-error" id="signup-error"></div>
+      <button class="acc-submit" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <div class="acc-footer">🔒 Your data is saved online, so it works on any device</div>
+  </div>
+</div>
+
+<!-- ══ START SCREEN ══ -->
+<div class="screen" id="start-screen" hidden>
+  <div class="brand">Twosome</div>
+  <span class="start-icon">🧠</span>
+  <h1>Ready to<br><span>Test Your Mind?</span></h1>
+  <p>Choose your level and answer questions about lessons, life skills, and what it means to keep growing.</p>
+
+  <div class="level-grid">
+    <div class="level-card" data-level="easy" onclick="selectLevel('easy', this)">
+      <div class="level-icon">🌱</div>
+      <div class="level-name">Easy</div>
+      <div class="level-desc">Great for beginners. Take your time and learn.</div>
+      <div class="level-badge">10 Questions</div>
+    </div>
+    <div class="level-card" data-level="normal" onclick="selectLevel('normal', this)">
+      <div class="level-icon">⚡</div>
+      <div class="level-name">Normal</div>
+      <div class="level-desc">A solid challenge. Think carefully before answering.</div>
+      <div class="level-badge">15 Questions</div>
+    </div>
+    <div class="level-card" data-level="hard" onclick="selectLevel('hard', this)">
+      <div class="level-icon">🔥</div>
+      <div class="level-name">Hard</div>
+      <div class="level-desc">The ultimate test. Only the sharpest minds succeed!</div>
+      <div class="level-badge">20 Questions</div>
+    </div>
+  </div>
+
+  <p class="start-hint" id="start-hint">👆 Pick a level to begin</p>
+  <button class="btn-primary" id="start-btn" onclick="beginQuiz()" style="opacity:0.4;pointer-events:none;">Start Quiz</button>
+  <div class="gm-wrap">
+    <div class="gm-title">🥅 Bonus Goal Game</div>
+    <div class="gm-sub">Hold Shoot to move, let go to stop · Quick double-tap = faster · +25 🪙 per goal · 5 goals = free 💣 (removes 3 defenders) · 10 goals = free ☢️ (removes 5)</div>
+    <div class="gm-level" id="gm-level"></div>
+    <div class="gm-ctrls">
+      <button class="gm-ibtn off" id="gm-pause" onclick="gmPause()" title="Pause">⏸️</button>
+      <button class="gm-ibtn off" id="gm-resume" onclick="gmResume()" title="Resume">▶️</button>
+      <button class="gm-ibtn" id="gm-restart" onclick="gmRestart()" title="Restart (VIP)">🔄<span class="lock" id="gm-restart-lock">🔒</span></button>
+    </div>
+    <canvas id="gm-canvas" width="320" height="420"></canvas>
+    <button class="gm-start" id="gm-start" onclick="gmStart()">▶ Start Game</button>
+    <button class="gm-starter" id="gm-starter" >⚽ Hold to Shoot</button>
+    <div class="gm-weapons">
+      <button class="gm-wbtn bomb" id="gm-bomb-btn" onclick="gmUse('bomb')">💣 Bomb <span id="gm-bomb-count">0</span></button>
+      <button class="gm-wbtn nuke" id="gm-nuke-btn" onclick="gmUse('nuke')">☢️ Nuclear <span id="gm-nuke-count">0</span></button>
+    </div>
+    <button class="gm-shop" onclick="openWeaponShop()">🛒 Buy Bomb / Nuclear</button>
+  </div>
+
+  <button class="gm-start" onclick="openVipModal()" style="background:#F59E0B;color:#0F172A;max-width:420px;margin:18px auto 6px;display:block;">💬 Send My Opinion 🌱</button>
+</div>
+
+<!-- ══ QUIZ SCREEN ══ -->
+<div class="screen" id="quiz-screen" hidden>
+  <div style="width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <div class="brand" style="margin:0;">Twosome</div>
+    <div class="level-pill" id="level-pill">Easy</div>
+  </div>
+  <div class="progress-bar-wrap" style="width:100%;max-width:600px;">
+    <div class="progress-bar-fill bar-easy" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="quiz-top" style="max-width:600px;">
+    <div class="q-counter" id="q-counter">Question 1 of 10</div>
+    <div class="score-badge">⭐ <span id="live-score">0</span> pts</div>
+  </div>
+  <div class="question-card" id="question-card">
+    <p id="question-text"></p>
+  </div>
+  <div class="options" id="options-wrap"></div>
+  <div class="feedback-row" id="feedback-row"></div>
+  <div style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <button class="use-hand-btn" id="use-hand-btn" onclick="useHand()" title="Reveal the correct answer">
+      🖐️ Use Hand <span id="quiz-hand-count" style="opacity:0.7;font-size:0.8em;"></span>
+    </button>
+    <div class="next-btn-wrap" style="flex:1;justify-content:flex-end;">
+      <button class="btn-primary" id="next-btn" onclick="nextQuestion()" hidden>Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULT SCREEN ══ -->
+<div class="screen" id="result-screen" hidden>
+  <div class="brand">Twosome</div>
+  <span class="trophy" id="trophy-icon">🏆</span>
+  <h2 id="result-title">Well Done!</h2>
+  <div class="score-display" id="final-score">0</div>
+  <div class="score-label" id="score-label">out of 100 points</div>
+  <div class="level-result-badge" id="level-result-badge">Easy</div>
+  <div id="coins-earned-banner" style="display:none;background:linear-gradient(135deg,#92400e,#b45309);color:#FDE68A;border-radius:12px;padding:12px 20px;max-width:420px;width:100%;margin:0 auto 12px;font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;text-align:center;"></div>
+  <div class="result-msg" id="result-msg"></div>
+  <div class="result-btns">
+    <button class="btn-primary" onclick="soundClick();replayLevel()">Play Again</button>
+    <button class="btn-secondary" onclick="reviewAnswers()">Review Answers</button>
+    <button class="btn-secondary" onclick="soundClick();goHome()" title="Go Home" style="padding:13px 18px;font-size:1.2rem;">🏠</button>
+  </div>
+  <div class="opinion-cta">
+    <p>Enjoyed the quiz? Share your thoughts with us and get 👑 VIP!</p>
+    <a href="#" onclick="event.preventDefault();openVipModal();return false;">Send My Opinion 🌱</a>
+  </div>
+  <div class="footer-note">Powered by <strong>GD</strong> · Twosome · 2026</div>
+</div>
+
+<script>
+// ── SOUND ENGINE ──────────────────────────────────────────────
+let audioCtx = null;
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playTone(freqs, durations, type='sine', vol=0.3) {
+  try {
+    const ctx = getCtx(); let t = ctx.currentTime;
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(vol, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + durations[i]);
+      osc.start(t); osc.stop(t + durations[i]); t += durations[i];
+    });
+  } catch(e) {}
+}
+function soundCorrect() { playTone([523,659,784],[0.12,0.12,0.22],'sine',0.28); }
+function soundWrong()   { playTone([220,180],[0.15,0.28],'sawtooth',0.18); }
+function soundClick()   { playTone([660],[0.06],'sine',0.12); }
+function soundSelect()  { playTone([440,550],[0.07,0.1],'sine',0.15); }
+function soundFinish(pct) {
+  if (pct===1)      playTone([523,659,784,1047],[0.1,0.1,0.1,0.4],'sine',0.3);
+  else if (pct>=0.5) playTone([523,659,784],[0.12,0.12,0.3],'sine',0.28);
+  else               playTone([392,440],[0.15,0.3],'sine',0.22);
+}
+// ─────────────────────────────────────────────────────────────
+
+// ── ACCOUNT SYSTEM ───────────────────────────────────────────
+// Accounts now live on the Firebase server (see the module script at the bottom).
+// currentUser / currentAccount hold the logged-in player's data in memory;
+// every change is also sent to the server so it works on any device.
+let currentUser = null;
+let currentAccount = null;
+
+function setAccountState(username, data) { currentUser = username; currentAccount = data; }
+function getSession() { return currentUser; }
+function getAccount() { return currentAccount; }
+function saveAccountData(data) {
+  if (!currentUser) return;
+  currentAccount = data;
+  if (window.fb) window.fb.saveData(data);
+}
+
+// ── COIN / HAND I/O (reads from logged-in account) ──
+function loadCoins() {
+  const acc = getAccount();
+  return acc ? (acc.coins || 0) : 0;
+}
+function saveCoins(n) {
+  const acc = getAccount();
+  if (!acc) return;
+  acc.coins = n;
+  saveAccountData(acc);
+}
+function loadHands() {
+  const acc = getAccount();
+  return acc ? (acc.hands || 0) : 0;
+}
+function saveHands(n) {
+  const acc = getAccount();
+  if (!acc) return;
+  acc.hands = n;
+  saveAccountData(acc);
+}
+
+// ── TAB SWITCHER ──
+function switchTab(tab) {
+  const slider = document.getElementById('acc-tab-slider');
+  const loginForm   = document.getElementById('login-form');
+  const signupForm  = document.getElementById('signup-form');
+  const tabLogin    = document.getElementById('tab-login');
+  const tabSignup   = document.getElementById('tab-signup');
+  if (tab === 'login') {
+    slider.classList.remove('right');
+    tabLogin.classList.add('active');   tabLogin.setAttribute('aria-selected','true');
+    tabSignup.classList.remove('active'); tabSignup.setAttribute('aria-selected','false');
+    loginForm.hidden = false; signupForm.hidden = true;
+  } else {
+    slider.classList.add('right');
+    tabSignup.classList.add('active');  tabSignup.setAttribute('aria-selected','true');
+    tabLogin.classList.remove('active'); tabLogin.setAttribute('aria-selected','false');
+    signupForm.hidden = false; loginForm.hidden = true;
+  }
+  soundSelect();
+}
+
+function togglePw(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+function showAccError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+}
+function clearAccError(id) {
+  const el = document.getElementById(id);
+  el.textContent = ''; el.classList.remove('show');
+}
+
+async function doLogin() {
+  soundClick();
+  clearAccError('login-error');
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  if (!username) { showAccError('login-error', 'Please enter your username.'); return; }
+  if (!password) { showAccError('login-error', 'Please enter your password.'); return; }
+  try {
+    await window.fb.login(username, password);   // enterApp() runs automatically after login
+  } catch (e) {
+    showAccError('login-error', window.fbMsg(e));
+  }
+}
+
+async function doSignup() {
+  soundClick();
+  clearAccError('signup-error');
+  const username = document.getElementById('signup-username').value.trim().toLowerCase();
+  const password = document.getElementById('signup-password').value;
+  if (!username) { showAccError('signup-error', 'Please choose a username.'); return; }
+  if (!/^[a-z0-9._-]{2,20}$/.test(username)) { showAccError('signup-error', 'Username: 2-20 letters or numbers (no spaces).'); return; }
+  if (password.length < 6) { showAccError('signup-error', 'Password must be at least 6 characters.'); return; }
+  try {
+    await window.fb.signup(username, password);
+  } catch (e) {
+    showAccError('signup-error', window.fbMsg(e));
+  }
+}
+
+function enterApp(username) {
+  // Show user chip
+  const chip = document.getElementById('user-chip');
+  const chipName = document.getElementById('user-chip-name');
+  const display = username.length > 12 ? username.slice(0, 12) + '…' : username;
+  chipName.textContent = display;
+  chip.hidden = false;
+
+  // Update badges
+  updateWalletBadge();
+  updateHandBadge();
+  updateWeaponUI();
+  updateVipUI();
+
+  // Show start screen
+  document.getElementById('account-screen').hidden = true;
+  document.getElementById('start-screen').hidden = false;
+
+  playTone([523, 659, 784], [0.08, 0.08, 0.18], 'sine', 0.2);
+}
+
+// ── PROFILE MODAL ──
+function openProfile() {
+  soundClick();
+  const u = getSession();
+  if (!u) return;
+  const acc = getAccount();
+  if (!acc) return;
+  const coins = acc.coins || 0;
+  const hands = acc.hands || 0;
+  const rank = getRank(coins);
+  document.getElementById('pm-username').textContent = u;
+  document.getElementById('pm-rank').textContent = rank.icon + ' ' + rank.label + (acc.vip ? ' · 👑 VIP' : '');
+  document.getElementById('pm-coins').textContent = coins;
+  document.getElementById('pm-hands').textContent = hands;
+  document.getElementById('profile-modal-bg').classList.add('open');
+}
+function closeProfile() {
+  document.getElementById('profile-modal-bg').classList.remove('open');
+}
+function logOut() {
+  soundClick();
+  if (window.fb) window.fb.logout();
+  setAccountState(null, null);
+  closeProfile();
+  // Hide chip and reset badges
+  document.getElementById('user-chip').hidden = true;
+  document.getElementById('wallet-count').textContent = '0';
+  document.getElementById('hand-count').textContent = '0';
+  updateWeaponUI();
+  updateVipUI();
+  if (window.gmStop) window.gmStop();
+  // Reset all screens
+  document.getElementById('start-screen').hidden = true;
+  document.getElementById('quiz-screen').hidden = true;
+  document.getElementById('result-screen').hidden = true;
+  // Clear level selection
+  chosenLevel = null;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('start-hint').textContent = '👆 Pick a level to begin';
+  const btn = document.getElementById('start-btn');
+  btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+  // Show account screen
+  document.getElementById('account-screen').hidden = false;
+  // Clear form fields
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('signup-username').value = '';
+  document.getElementById('signup-password').value = '';
+  clearAccError('login-error'); clearAccError('signup-error');
+  switchTab('login');
+}
+
+// ── PAGE LOAD: check session ──
+// Page-load login check is handled by Firebase (module script at the bottom).
+// ─────────────────────────────────────────────────────────────
+
+// ── ALL 20 QUESTIONS (Easy uses first 10, Normal first 15, Hard all 20) ──
+const ALL_QUESTIONS = [
+  // ── EASY (1–10) ──
+  {
+    q: "What is the most important reason to keep learning every day?",
+    options: ["To show off to others","To grow and improve yourself","To finish school faster","To earn more money quickly"],
+    correct: 1,
+    explain: "Learning every day helps you grow as a person — it builds your skills, confidence, and opens new doors."
+  },
+  {
+    q: "A seed grows even in dry ground. What does this teach us?",
+    options: ["That seeds need no water at all","That only some things survive hard times","That the will to grow can be stronger than difficult conditions","That dry ground is always better for plants"],
+    correct: 2,
+    explain: "The seed story teaches us that a strong will to grow can push through even the hardest conditions."
+  },
+  {
+    q: "What does true failure really mean?",
+    options: ["Getting an answer wrong in class","Trying something difficult","Staying down when you still have strength to rise","Not knowing the right answer"],
+    correct: 2,
+    explain: "Failure is not falling — it's choosing to stay down. As long as you get up and try again, you have not truly failed."
+  },
+  {
+    q: "Which habit helps the most when you are struggling to learn something?",
+    options: ["Giving up and trying something easier","Asking for help and trying again","Waiting for someone else to explain it","Pretending you already understand"],
+    correct: 1,
+    explain: "Asking for help and trying again is the best habit. Nobody learns alone — and persistence is what leads to understanding."
+  },
+  {
+    q: "Why is it important to share what you learn with others?",
+    options: ["So others know you are smarter","So learning can multiply and help more people grow","So teachers give you better marks","So you can finish your work faster"],
+    correct: 1,
+    explain: "Knowledge shared is knowledge multiplied. When you teach others what you know, learning grows in the whole community."
+  },
+  {
+    q: "What does a motivational story help a reader do?",
+    options: ["Memorise facts for an exam","Feel inspired and see new possibilities in their own life","Learn new language grammar","Understand science better"],
+    correct: 1,
+    explain: "A good motivational story holds a mirror up to your own life and shows you what is possible — it sparks hope and action."
+  },
+  {
+    q: "Which best describes the right attitude toward a difficult challenge?",
+    options: ["Avoid it until you feel fully ready","Wait for someone else to solve it first","Face it step by step, learning as you go","Complain about how hard it is"],
+    correct: 2,
+    explain: "Facing a challenge step by step — without waiting to feel perfect — is how progress actually happens."
+  },
+  {
+    q: "Amara returned to school after seeing the seed. What was her biggest act of courage?",
+    options: ["She watered the seed every day","She told the whole village what she saw","She sat at her old desk even though it felt too small","She planted more seeds in the garden"],
+    correct: 2,
+    explain: "Amara's courage was going back even when she felt out of place. Starting again, however small it feels, takes real bravery."
+  },
+  {
+    q: "What is the best thing to do when you make a mistake?",
+    options: ["Hide it and pretend it never happened","Blame someone else","Learn from it and try again","Give up completely"],
+    correct: 2,
+    explain: "Mistakes are teachers. The best response is to understand what went wrong, learn from it, and try again with new knowledge."
+  },
+  {
+    q: "What does it mean to be patient in learning?",
+    options: ["Waiting for someone to give you all the answers","Taking your time and trusting that progress will come","Doing nothing and hoping things improve","Copying from others to move faster"],
+    correct: 1,
+    explain: "Patience in learning means trusting the process — real understanding comes gradually, not all at once."
+  },
+  // ── NORMAL extras (11–15) ──
+  {
+    q: "If someone laughs at you for trying something new, what is the best response?",
+    options: ["Stop trying to avoid embarrassment","Laugh with them and quit","Keep going — their opinion does not decide your future","Get angry and argue with them"],
+    correct: 2,
+    explain: "Other people's laughter cannot stop you unless you let it. Keep going — every great achiever was once mocked for trying."
+  },
+  {
+    q: "What is one sign that you are truly growing as a person?",
+    options: ["You never make mistakes anymore","You feel uncomfortable because you are trying new things","You always feel confident","Other people say you are perfect"],
+    correct: 1,
+    explain: "Growth often feels uncomfortable. When you are stretching beyond what you already know, that is a sign you are truly growing."
+  },
+  {
+    q: "Why is listening to others carefully important?",
+    options: ["To find chances to disagree","To understand their experience and learn from it","To make them feel you are paying attention only","To find their weaknesses"],
+    correct: 1,
+    explain: "Deep listening opens the door to learning from others' experiences — it is one of the most powerful learning tools we have."
+  },
+  {
+    q: "What is more valuable than having all the answers?",
+    options: ["Knowing the right people","Asking the right questions","Being the loudest voice in the room","Having the most money"],
+    correct: 1,
+    explain: "Good questions lead to discovery. The best thinkers in history were driven by curiosity and great questions, not ready-made answers."
+  },
+  {
+    q: "A person tries something ten times and fails each time. What should they do on the eleventh try?",
+    options: ["Give up — ten failures is enough","Try the same way hoping for luck","Reflect on what went wrong, adjust, and try a new approach","Ask someone else to do it for them"],
+    correct: 2,
+    explain: "Einstein said repeating the same action and expecting different results is unwise. Reflect, adjust your approach, and try again smarter."
+  },
+  // ── HARD extras (16–20) ──
+  {
+    q: "What is the difference between knowledge and wisdom?",
+    options: ["Knowledge is for old people; wisdom is for the young","Knowledge is facts you know; wisdom is knowing how and when to use them","They mean exactly the same thing","Wisdom comes only from reading many books"],
+    correct: 1,
+    explain: "Knowledge is information stored in your mind. Wisdom is the ability to apply that knowledge well — it comes through experience and reflection."
+  },
+  {
+    q: "Why do some people fear success as much as they fear failure?",
+    options: ["Because they enjoy suffering","Because success brings new responsibilities and higher expectations","Because failure is more comfortable than success","Because they have never tried anything difficult"],
+    correct: 1,
+    explain: "Success raises the bar — with it come new responsibilities and the risk of losing what you have gained. That fear is real but must not stop growth."
+  },
+  {
+    q: "Which of these best explains why stories have been used to teach for thousands of years?",
+    options: ["Stories are easier to memorise than facts","Stories engage emotions, making lessons stick deeper in the mind","Stories are only for children","Stories replace the need for real experience"],
+    correct: 1,
+    explain: "Stories connect facts to emotions and experience, which is how the brain best stores and recalls information. That is why oral traditions and parables have always been powerful teachers."
+  },
+  {
+    q: "A community where everyone teaches and learns from each other is called what kind of community?",
+    options: ["A competitive community","A silent community","A learning community","A perfect community"],
+    correct: 2,
+    explain: "A learning community is one where knowledge flows in all directions — everyone is both a student and a teacher, and the whole group grows together."
+  },
+  {
+    q: "What is the hardest and most important step in changing a bad habit?",
+    options: ["Telling others about the habit","Admitting the habit exists and deciding it must change","Waiting for the habit to go away on its own","Replacing it immediately with a perfect new one"],
+    correct: 1,
+    explain: "Awareness and honest decision are the foundation. Without admitting a habit needs to change and truly deciding to change it, no other step can work."
+  }
+];
+
+// ── LEVEL CONFIG ──
+const LEVELS = {
+  easy:   { count: 10, label: 'Easy',   icon: '🌱', barClass: 'bar-easy',   pillClass: 'lp-easy',   badgeColor: 'var(--easy)'   },
+  normal: { count: 15, label: 'Normal', icon: '⚡', barClass: 'bar-normal', pillClass: 'lp-normal', badgeColor: 'var(--normal)' },
+  hard:   { count: 20, label: 'Hard',   icon: '🔥', barClass: 'bar-hard',   pillClass: 'lp-hard',   badgeColor: 'var(--hard)'   }
+};
+
+let current = 0, score = 0, answered = [];
+let chosenLevel = null;
+let activeQuestions = [];
+
+function selectLevel(level, el) {
+  soundSelect();
+  chosenLevel = level;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const cfg = LEVELS[level];
+  document.getElementById('start-hint').textContent = cfg.icon + ' ' + cfg.label + ' — ' + cfg.count + ' questions selected!';
+  const btn = document.getElementById('start-btn');
+  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+}
+
+function beginQuiz() {
+  if (!chosenLevel) return;
+  soundClick();
+  const cfg = LEVELS[chosenLevel];
+  activeQuestions = ALL_QUESTIONS.slice(0, cfg.count);
+  current = 0; score = 0; answered = [];
+
+  const fill = document.getElementById('progress-fill');
+  fill.className = 'progress-bar-fill ' + cfg.barClass;
+
+  const pill = document.getElementById('level-pill');
+  pill.textContent = cfg.icon + ' ' + cfg.label;
+  pill.className = 'level-pill ' + cfg.pillClass;
+
+  document.getElementById('start-screen').hidden = true;
+  document.getElementById('result-screen').hidden = true;
+  document.getElementById('quiz-screen').hidden = false;
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = activeQuestions[current];
+  const total = activeQuestions.length;
+  document.getElementById('progress-fill').style.width = ((current / total) * 100) + '%';
+  document.getElementById('q-counter').textContent = 'Question ' + (current + 1) + ' of ' + total;
+  document.getElementById('live-score').textContent = score;
+  document.getElementById('question-text').textContent = q.q;
+  const fb = document.getElementById('feedback-row');
+  fb.textContent = ''; fb.className = 'feedback-row'; fb.style.color = '';
+  document.getElementById('next-btn').hidden = true;
+  const handBtn = document.getElementById('use-hand-btn');
+  if (handBtn) { handBtn.disabled = (loadHands() <= 0); }
+  updateHandBadge();
+
+  const letters = ['A','B','C','D'];
+  const wrap = document.getElementById('options-wrap');
+  wrap.innerHTML = '';
+  const indices = [0,1,2,3];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  indices.forEach((origIdx, displayPos) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = '<span class="opt-letter">' + letters[displayPos] + '</span>' + q.options[origIdx];
+    btn.onclick = () => selectAnswer(origIdx, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectAnswer(index, btn) {
+  const q = activeQuestions[current];
+  const buttons = document.querySelectorAll('.opt-btn');
+  buttons.forEach(b => b.disabled = true);
+  const handBtn = document.getElementById('use-hand-btn');
+  if (handBtn) handBtn.disabled = true;
+  const fb = document.getElementById('feedback-row');
+  fb.style.color = '';
+  if (index === q.correct) {
+    btn.classList.add('correct');
+    score += 10;
+    document.getElementById('live-score').textContent = score;
+    fb.textContent = '✓ Correct! ' + q.explain;
+    fb.className = 'feedback-row good';
+    answered.push({ q: q.q, chosen: q.options[index], correct: q.options[q.correct], right: true });
+    soundCorrect();
+  } else {
+    btn.classList.add('wrong');
+    const correctText = q.options[q.correct];
+    buttons.forEach(b => { if (b.textContent.includes(correctText)) b.classList.add('correct'); });
+    fb.textContent = '✗ Right answer: ' + q.options[q.correct] + '. ' + q.explain;
+    fb.className = 'feedback-row bad';
+    answered.push({ q: q.q, chosen: q.options[index], correct: q.options[q.correct], right: false });
+    soundWrong();
+  }
+  document.getElementById('next-btn').hidden = false;
+}
+
+function nextQuestion() {
+  current++;
+  if (current < activeQuestions.length) showQuestion();
+  else showResults();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').hidden = true;
+  document.getElementById('result-screen').hidden = false;
+  document.getElementById('progress-fill').style.width = '100%';
+
+  const total = activeQuestions.length * 10;
+  const pct = score / total;
+  const cfg = LEVELS[chosenLevel];
+
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('score-label').textContent = 'out of ' + total + ' points';
+
+  const badge = document.getElementById('level-result-badge');
+  badge.textContent = cfg.icon + ' ' + cfg.label + ' Level';
+  badge.style.color = cfg.badgeColor;
+  badge.style.borderColor = cfg.badgeColor;
+
+  let trophy, title, msg;
+  if (pct === 1) {
+    trophy = '🏆'; title = 'Perfect Score!';
+    msg = 'Outstanding! Every answer correct on ' + cfg.label + ' level. You are a true learner — keep inspiring others!';
+  } else if (pct >= 0.75) {
+    trophy = '🌟'; title = 'Excellent Work!';
+    msg = 'Great job on ' + cfg.label + ' level! Your understanding is strong. Review the ones you missed and you will be unstoppable.';
+  } else if (pct >= 0.5) {
+    trophy = '👍'; title = 'Good Effort!';
+    msg = 'You are on the right track on ' + cfg.label + ' level. Half the battle is showing up. Try again — you will do even better!';
+  } else {
+    trophy = '🌱'; title = 'Keep Growing!';
+    msg = 'Every expert was once a beginner. Go back, read the lesson story, and try ' + cfg.label + ' again. Each attempt makes you stronger.';
+  }
+  document.getElementById('trophy-icon').textContent = trophy;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-msg').textContent = msg;
+  soundFinish(pct);
+
+  const banner = document.getElementById('coins-earned-banner');
+  if (score > 0) {
+    addCoins(score);
+    const newTotal = loadCoins();
+    const rank = getRank(newTotal);
+    banner.textContent = '🪙 +' + score + ' coins earned! Total: ' + newTotal + ' · ' + rank.icon + ' ' + rank.label;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function goHome() {
+  document.getElementById('result-screen').hidden = true;
+  document.getElementById('quiz-screen').hidden = true;
+  document.getElementById('start-screen').hidden = false;
+}
+
+function replayLevel() {
+  current = 0; score = 0; answered = [];
+  document.getElementById('result-screen').hidden = true;
+  document.getElementById('start-screen').hidden = true;
+  document.getElementById('quiz-screen').hidden = false;
+  showQuestion();
+}
+
+// ── RANKS ──
+const RANKS = [
+  { coins: 0,    icon: '🌱', label: 'Seedling',   color: '#22C55E' },
+  { coins: 100,  icon: '⭐', label: 'Learner',     color: '#38BDF8' },
+  { coins: 250,  icon: '🔥', label: 'Challenger',  color: '#F59E0B' },
+  { coins: 500,  icon: '💎', label: 'Expert',      color: '#A78BFA' },
+  { coins: 1000, icon: '🏆', label: 'Champion',    color: '#F472B6' },
+];
+function getRank(coins) {
+  let r = RANKS[0];
+  for (const rank of RANKS) { if (coins >= rank.coins) r = rank; }
+  return r;
+}
+
+// ── COIN WALLET ──
+function updateWalletBadge() {
+  document.getElementById('wallet-count').textContent = loadCoins();
+}
+function addCoins(earned) {
+  const prev = loadCoins();
+  const next = prev + earned;
+  saveCoins(next);
+  updateWalletBadge();
+  const pop = document.getElementById('coin-pop');
+  pop.textContent = '+' + earned + ' 🪙';
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 2200);
+  playTone([880, 1047, 1318], [0.07, 0.07, 0.18], 'sine', 0.2);
+}
+function openWallet() {
+  soundClick();
+  const coins = loadCoins();
+  document.getElementById('modal-total').textContent = coins;
+
+  let html = '';
+  RANKS.forEach((r, i) => {
+    const achieved = coins >= r.coins;
+    const next = RANKS[i + 1];
+    let sub = '';
+    if (!achieved && i === 0) sub = 'Start playing to earn coins!';
+    else if (!achieved) sub = (r.coins - coins) + ' coins needed';
+    else if (achieved) sub = next ? 'Next: ' + next.label + ' at ' + next.coins : '🎉 Max rank!';
+    html += `<div class="wallet-rank ${achieved ? 'achieved' : ''}">
+      <span class="wr-icon">${r.icon}</span>
+      <span class="wr-label" style="color:${achieved ? r.color : ''}">${r.label}<br><span style="font-weight:400;font-size:0.78rem;color:var(--subtle)">${sub}</span></span>
+      <span class="wr-coins">${r.coins}+</span>
+    </div>`;
+  });
+  document.getElementById('wallet-ranks').innerHTML = html;
+  document.getElementById('wallet-modal-bg').classList.add('open');
+}
+function closeWallet() {
+  document.getElementById('wallet-modal-bg').classList.remove('open');
+}
+
+// ── HANDS (HINTS) ──
+const HAND_COST_1 = 30;
+const HAND_COST_3 = 80;
+
+function updateHandBadge() {
+  const h = Math.max(0, loadHands());
+  document.getElementById('hand-count').textContent = h;
+  const qb = document.getElementById('quiz-hand-count');
+  if (qb) qb.textContent = '(' + h + ')';
+  const btn = document.getElementById('use-hand-btn');
+  if (btn) btn.disabled = (h <= 0);
+}
+function useHand() {
+  const hands = loadHands();
+  if (hands <= 0) { openBuyHands(); return; }
+
+  const q = activeQuestions[current];
+  const allBtns = document.querySelectorAll('.opt-btn');
+  const correctText = q.options[q.correct];
+  let found = false;
+  allBtns.forEach(btn => {
+    if (!found && btn.textContent.includes(correctText)) {
+      btn.classList.add('correct', 'hint-reveal');
+      found = true;
+    }
+  });
+
+  allBtns.forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback-row');
+  fb.textContent = '🖐️ Hand used! The correct answer has been revealed. No points awarded.';
+  fb.className = 'feedback-row';
+  fb.style.color = '#A78BFA';
+  document.getElementById('next-btn').hidden = false;
+  document.getElementById('use-hand-btn').disabled = true;
+
+  answered.push({ q: q.q, chosen: '(Hand used)', correct: q.options[q.correct], right: false, hint: true });
+
+  saveHands(hands - 1);
+  updateHandBadge();
+
+  playTone([660, 880, 1100], [0.08, 0.08, 0.2], 'sine', 0.18);
+}
+function openBuyHands() {
+  soundClick();
+  document.getElementById('buy-coin-balance').textContent = loadCoins();
+  document.getElementById('buy-modal-bg').classList.add('open');
+}
+function closeBuyHands() {
+  document.getElementById('buy-modal-bg').classList.remove('open');
+}
+function buyHands(qty) {
+  const cost = qty === 1 ? HAND_COST_1 : HAND_COST_3;
+  const coins = loadCoins();
+  if (coins < cost) {
+    const bal = document.getElementById('buy-coin-balance');
+    bal.style.color = 'var(--wrong)';
+    bal.textContent = 'Not enough! (need ' + cost + ')';
+    setTimeout(() => { bal.style.color = ''; bal.textContent = loadCoins(); }, 1600);
+    playTone([220, 180], [0.1, 0.2], 'sawtooth', 0.15);
+    return;
+  }
+  saveCoins(coins - cost);
+  updateWalletBadge();
+  saveHands(loadHands() + qty);
+  updateHandBadge();
+  closeBuyHands();
+
+  const pop = document.getElementById('coin-pop');
+  pop.textContent = '-' + cost + ' 🪙 · +' + qty + ' 🖐️';
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 2200);
+  playTone([523, 659], [0.1, 0.2], 'sine', 0.2);
+}
+
+function reviewAnswers() {
+  document.getElementById('quiz-screen').hidden = false;
+  document.getElementById('result-screen').hidden = true;
+
+  let html = '<div style="width:100%;max-width:600px;">';
+  html += '<div style="font-family:\'Nunito\',sans-serif;font-weight:900;font-size:1.1rem;margin-bottom:20px;color:var(--accent);">Review — Your Answers</div>';
+  answered.forEach((a, i) => {
+    const color = a.right ? 'var(--correct)' : 'var(--wrong)';
+    const icon  = a.right ? '✓' : '✗';
+    html += '<div style="background:var(--card);border:1.5px solid ' + color + ';border-radius:12px;padding:16px;margin-bottom:12px;">';
+    html += '<div style="font-weight:700;margin-bottom:8px;font-size:0.92rem;">' + (i+1) + '. ' + a.q + '</div>';
+    html += '<div style="font-size:0.85rem;color:' + color + ';font-weight:700;">' + icon + ' Your answer: ' + a.chosen + (a.hint ? ' 🖐️' : '') + '</div>';
+    if (!a.right && !a.hint) html += '<div style="font-size:0.85rem;color:var(--correct);font-weight:700;margin-top:4px;">✓ Correct: ' + a.correct + '</div>';
+    if (a.hint) html += '<div style="font-size:0.85rem;color:#A78BFA;font-weight:700;margin-top:4px;">🖐️ Hand used — Correct: ' + a.correct + '</div>';
+    html += '</div>';
+  });
+  html += '<div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">';
+  html += '<button class="btn-primary" onclick="soundClick();replayLevel()">Play Again</button>';
+  html += '<button class="btn-secondary" onclick="showResults()">Back to Results</button>';
+  html += '</div></div>';
+
+  document.getElementById('question-card').innerHTML = html;
+  document.getElementById('options-wrap').innerHTML = '';
+  document.getElementById('feedback-row').textContent = '';
+  document.getElementById('next-btn').hidden = true;
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('q-counter').textContent = 'Review';
+  document.getElementById('live-score').textContent = score;
+}
+
+// ── VIP ──
+function loadVip(){ const a=getAccount(); return !!(a && a.vip); }
+function saveVip(v){ const a=getAccount(); if(!a) return; a.vip=!!v; saveAccountData(a); }
+function updateVipUI(){
+  const lock=document.getElementById('gm-restart-lock');
+  if(lock) lock.hidden = loadVip();
+}
+const VIP_FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLSd9uU-wem4XiVRAUhLL3imt8eOiNkkjrp__ZlAAJ1C5NN5Vtw/viewform?embedded=true';
+let vipLoads=0;
+function openVipModal(){
+  soundClick();
+  if(loadVip()){ toastVip('👑 You are already VIP!'); return; }
+  vipLoads=0;
+  const f=document.getElementById('vip-frame'); f.removeAttribute('src');
+  document.getElementById('vip-form-wrap').style.display='none';
+  document.getElementById('vip-open-btn').style.display='block';
+  document.getElementById('vip-modal-bg').classList.add('open');
+}
+function closeVipModal(){ document.getElementById('vip-modal-bg').classList.remove('open'); }
+function openVipForm(){
+  soundClick();
+  vipLoads=0;
+  const f=document.getElementById('vip-frame');
+  // Google Forms loads once when shown; a SECOND load means the form was submitted.
+  f.onload=function(){
+    vipLoads++;
+    if(vipLoads>=2) grantVip();
+  };
+  document.getElementById('vip-open-btn').style.display='none';
+  document.getElementById('vip-form-wrap').style.display='block';
+  document.getElementById('vip-sub').textContent='Send your opinion to unlock VIP 👑';
+  f.src=VIP_FORM_URL;
+}
+function toastVip(t){
+  const pop=document.getElementById('coin-pop');
+  pop.textContent=t; pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'),2400);
+}
+function grantVip(){
+  if(loadVip()) return;
+  saveVip(true);
+  updateVipUI();
+  closeVipModal();
+  toastVip('👑 VIP unlocked!');
+  try{ playTone([523,659,784,1047],[0.1,0.1,0.1,0.35],'sine',0.25); }catch(e){}
+}
+
+// ── WEAPONS (bomb / nuclear) ──
+function loadBombs(){ const a=getAccount(); return a ? (a.bombs||0) : 0; }
+function saveBombs(n){ const a=getAccount(); if(!a) return; a.bombs=n; saveAccountData(a); }
+function loadNukes(){ const a=getAccount(); return a ? (a.nukes||0) : 0; }
+function saveNukes(n){ const a=getAccount(); if(!a) return; a.nukes=n; saveAccountData(a); }
+function updateWeaponUI(){
+  const b=loadBombs(), n=loadNukes();
+  const bc=document.getElementById('gm-bomb-count'), nc=document.getElementById('gm-nuke-count');
+  if(bc) bc.textContent='('+b+')';
+  if(nc) nc.textContent='('+n+')';
+  const bb=document.getElementById('gm-bomb-btn'), nb=document.getElementById('gm-nuke-btn');
+  if(bb) bb.classList.toggle('empty', b<=0);
+  if(nb) nb.classList.toggle('empty', n<=0);
+}
+function openWeaponShop(){
+  soundClick();
+  document.getElementById('weapon-coin-balance').textContent = loadCoins();
+  document.getElementById('weapon-modal-bg').classList.add('open');
+}
+function closeWeaponShop(){
+  document.getElementById('weapon-modal-bg').classList.remove('open');
+}
+function buyWeapon(type){
+  const isBomb = type==='bomb';
+  const cost = isBomb ? 100 : 200, qty = isBomb ? 3 : 5, icon = isBomb ? '💣' : '☢️';
+  const coins = loadCoins();
+  const bal = document.getElementById('weapon-coin-balance');
+  if(coins < cost){
+    bal.style.color='var(--wrong)';
+    bal.textContent='Not enough! (need '+cost+')';
+    setTimeout(()=>{ bal.style.color=''; bal.textContent=loadCoins(); },1600);
+    playTone([220,180],[0.1,0.2],'sawtooth',0.15);
+    return;
+  }
+  saveCoins(coins-cost);
+  updateWalletBadge();
+  if(isBomb) saveBombs(loadBombs()+qty); else saveNukes(loadNukes()+qty);
+  updateWeaponUI();
+  bal.textContent = loadCoins();
+  const pop=document.getElementById('coin-pop');
+  pop.textContent='-'+cost+' 🪙 · +'+qty+' '+icon;
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'),2200);
+  playTone([523,659,880],[0.08,0.08,0.2],'sine',0.2);
+}
+
+// ── BONUS GOAL GAME ──
+(function(){
+  const cv=document.getElementById('gm-canvas'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const W=320,H=420,R=9,GOAL_Y=28,START_Y=H-40;
+  const TOP=62,REGION=252,MAXL=100,MAXROWS=15;
+  const BASE=190,STEP=130,MAXV=620,BACK=520;
+  const ball={x:W/2,y:START_Y};
+  let fx=[],flash=0,started=false,paused=false;
+  let level=1,goals=0,rows=[],dir=0,speed=BASE,holding=false,lastPress=0,msg='',msgT=0,last=0;
+  try{ const sv=parseInt(localStorage.getItem('gm_level'),10); if(sv>=1&&sv<=MAXL) level=sv; const gv=parseInt(localStorage.getItem('gm_goals'),10); if(gv>=0) goals=gv; }catch(e){}
+
+  // ── mini-game sounds ──
+  let noiseBuf=null;
+  function noise(ctx){
+    if(!noiseBuf){ noiseBuf=ctx.createBuffer(1,ctx.sampleRate*0.2,ctx.sampleRate);
+      const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; }
+    return noiseBuf;
+  }
+  function burst(ctx,t,freq,q,vol,dur,type){
+    const src=ctx.createBufferSource(); src.buffer=noise(ctx);
+    const f=ctx.createBiquadFilter(); f.type=type||'bandpass'; f.frequency.value=freq; f.Q.value=q;
+    const g=ctx.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t); src.stop(t+dur+0.02);
+  }
+  function sfxClap(){
+    try{
+      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const t0=ctx.currentTime+0.02;
+      for(let i=0;i<26;i++){
+        const x=Math.random(); const t=t0+x*1.6;
+        const v=0.22*(1-Math.abs(x-0.35)*0.9)+0.04;
+        const fr=1400+Math.random()*1800;
+        burst(ctx,t,fr,0.8,v,0.09);
+        burst(ctx,t+0.012,fr*1.1,0.8,v*0.7,0.08);
+        burst(ctx,t+0.026,fr*0.9,0.8,v*0.5,0.07);
+      }
+    }catch(e){}
+  }
+  function sfxBlock(){
+    try{
+      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const t=ctx.currentTime;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(70,t+0.14);
+      g.gain.setValueAtTime(0.4,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.18);
+      burst(ctx,t,900,1,0.25,0.04);
+    }catch(e){}
+  }
+  function sfxKick(){
+    try{
+      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const t=ctx.currentTime;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='triangle'; o.frequency.setValueAtTime(300,t); o.frequency.exponentialRampToValueAtTime(700,t+0.09);
+      g.gain.setValueAtTime(0.16,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.11);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.12);
+      burst(ctx,t,3000,0.7,0.14,0.07,'highpass');
+    }catch(e){}
+  }
+
+  function rumble(ctx,t,freq,vol,dur){
+    const src=ctx.createBufferSource(); src.buffer=noise(ctx); src.loop=true;
+    const f=ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(freq,t); f.frequency.exponentialRampToValueAtTime(60,t+dur);
+    const g=ctx.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t); src.stop(t+dur+0.05);
+  }
+  function sfxBomb(){
+    try{
+      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const t=ctx.currentTime;
+      const w=ctx.createOscillator(), wg=ctx.createGain();
+      w.type='sine'; w.frequency.setValueAtTime(1300,t); w.frequency.exponentialRampToValueAtTime(350,t+0.18);
+      wg.gain.setValueAtTime(0.12,t); wg.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      w.connect(wg); wg.connect(ctx.destination); w.start(t); w.stop(t+0.22);
+      const b=t+0.17;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(160,b); o.frequency.exponentialRampToValueAtTime(35,b+0.5);
+      g.gain.setValueAtTime(0.6,b); g.gain.exponentialRampToValueAtTime(0.001,b+0.55);
+      o.connect(g); g.connect(ctx.destination); o.start(b); o.stop(b+0.6);
+      rumble(ctx,b,1800,0.55,0.7);
+    }catch(e){}
+  }
+  function sfxNuke(){
+    try{
+      const ctx=getCtx(); if(ctx.state==='suspended') ctx.resume();
+      const t=ctx.currentTime;
+      const s=ctx.createOscillator(), sg=ctx.createGain();
+      s.type='sawtooth'; s.frequency.setValueAtTime(300,t); s.frequency.exponentialRampToValueAtTime(1100,t+0.4);
+      sg.gain.setValueAtTime(0.001,t); sg.gain.exponentialRampToValueAtTime(0.14,t+0.3); sg.gain.exponentialRampToValueAtTime(0.001,t+0.42);
+      s.connect(sg); sg.connect(ctx.destination); s.start(t); s.stop(t+0.45);
+      const b=t+0.4;
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(130,b); o.frequency.exponentialRampToValueAtTime(24,b+1.6);
+      g.gain.setValueAtTime(0.9,b); g.gain.exponentialRampToValueAtTime(0.001,b+1.7);
+      o.connect(g); g.connect(ctx.destination); o.start(b); o.stop(b+1.8);
+      rumble(ctx,b,2500,0.8,1.6);
+      burst(ctx,b,5000,0.6,0.5,0.15,'highpass');
+    }catch(e){}
+  }
+
+  function build(){
+    const n=level, nr=Math.min(MAXROWS,n);
+    const base=Math.floor(n/nr), extra=n%nr;
+    const rowH=Math.min(48,REGION/nr);
+    const startY=TOP+(REGION-nr*rowH)/2;
+    const h=Math.min(16,rowH-3);
+    rows=[];
+    for(let r=0;r<nr;r++){
+      const k=base+(r<extra?1:0);
+      const w=Math.max(14,Math.min(96,Math.floor(W/k)-(2*R+8)));
+      const sp=Math.min(220,70+Math.min(n,40)*2+(r%5)*10);
+      rows.push({y:startY+r*rowH+(rowH-h)/2,h:h,k:k,w:w,off:Math.random()*W,v:(r%2?-1:1)*sp,dead:new Array(k).fill(false)});
+    }
+    updateLabel();
+  }
+  function updateLabel(){
+    const el=document.getElementById('gm-level');
+    if(el) el.textContent='Level '+level+' · '+level+' defender'+(level>1?'s':'')+' · 🎯 '+(goals%5)+'/5 💣 · '+(goals%10)+'/10 ☢️';
+  }
+  function press(){
+    if(msgT>0||!started||paused) return;
+    holding=true;
+    const now=performance.now();
+    const quick=(now-lastPress)<400;
+    lastPress=now;
+    if(dir===-1){ speed=quick?Math.min(speed+STEP,MAXV):BASE; }
+    else { dir=-1; speed=BASE; }
+    sfxKick();
+  }
+  function release(){ holding=false; }
+  (function(){
+    const btn=document.getElementById('gm-starter'); if(!btn) return;
+    btn.addEventListener('pointerdown',function(e){ e.preventDefault(); try{ btn.setPointerCapture(e.pointerId); }catch(_){} press(); });
+    ['pointerup','pointercancel','lostpointercapture'].forEach(function(n){ btn.addEventListener(n,release); });
+    btn.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+    btn.addEventListener('keydown',function(e){ if((e.key===' '||e.key==='Enter')&&!e.repeat){ e.preventDefault(); press(); } });
+    btn.addEventListener('keyup',function(e){ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); release(); } });
+  })();
+  function reset(){ ball.y=START_Y; dir=0; speed=BASE; }
+  function goal(){
+    goals++;
+    let bonus=0;
+    if(goals%5===0) bonus=5*(goals/5);
+    msg=(level<MAXL?'GOAL! +25 🪙':'MAX LEVEL! +25 🪙')+(bonus?'\n5-GOAL BONUS +'+bonus+' 🪙':'');
+    const freeBomb=(goals%5===0), freeNuke=(goals%10===0);
+    if(freeBomb){ msg+='\n💣 FREE BOMB +1'; try{ saveBombs(loadBombs()+1); }catch(e){} }
+    if(freeNuke){ msg+='\n☢️ FREE NUCLEAR +1'; try{ saveNukes(loadNukes()+1); }catch(e){} }
+    try{ updateWeaponUI(); }catch(e){}
+    msgT=freeNuke?3.2:(bonus?2.6:1.6); reset();
+    if(level<MAXL) level++;
+    try{ localStorage.setItem('gm_level',String(level)); localStorage.setItem('gm_goals',String(goals)); }catch(e){}
+    build();
+    sfxClap();
+    if(bonus){ try{ playTone([523,659,784,1047],[0.1,0.1,0.1,0.4],'sine',0.25); }catch(e){} }
+    try{ addCoins(25+bonus); }catch(e){}
+  }
+  function hitRow(){
+    for(const row of rows){
+      if(ball.y-R<row.y+row.h && ball.y+R>row.y){
+        for(let i=0;i<row.k;i++){
+          if(row.dead[i]) continue;
+          const cx=(row.off+i*W/row.k)%W;
+          for(let sh=-W;sh<=W;sh+=W){
+            if(Math.abs(ball.x-(cx+sh))<row.w/2+R) return row;
+          }
+        }
+      }
+    }
+    return null;
+  }
+  function blast(count,kind){
+    const cand=[];
+    for(const row of rows){
+      for(let i=0;i<row.k;i++){
+        if(row.dead[i]) continue;
+        const cx=(row.off+i*W/row.k)%W, cy=row.y+row.h/2;
+        let dx=Math.abs(cx-ball.x); dx=Math.min(dx,W-dx);
+        cand.push({row:row,i:i,cx:cx,cy:cy,ahead:cy<ball.y,d:Math.hypot(dx,cy-ball.y)});
+      }
+    }
+    cand.sort(function(a,b){ return (b.ahead-a.ahead)||(a.d-b.d); });
+    const hit=cand.slice(0,count);
+    hit.forEach(function(c){
+      c.row.dead[c.i]=true;
+      fx.push({x:c.cx,y:c.cy,t:0,dur:kind==='nuke'?0.9:0.6,kind:kind});
+    });
+    return hit.length;
+  }
+  function useWeapon(kind){
+    if(!started||paused||msgT>0) return;
+    const isBomb=kind==='bomb';
+    const have=isBomb?loadBombs():loadNukes();
+    if(have<=0){ openWeaponShop(); return; }
+    if(blast(isBomb?3:5,kind)===0){ playTone([300,260],[0.06,0.08],'sine',0.12); return; }
+    if(isBomb){ saveBombs(have-1); sfxBomb(); }
+    else { saveNukes(have-1); sfxNuke(); flash=0.7; }
+    updateWeaponUI();
+  }
+  window.gmUse=useWeapon;
+
+  function update(dt){
+    for(let i=fx.length-1;i>=0;i--){ fx[i].t+=dt; if(fx[i].t>fx[i].dur) fx.splice(i,1); }
+    if(flash>0) flash=Math.max(0,flash-dt);
+    for(const row of rows){ row.off=((row.off+row.v*dt)%W+W)%W; }
+    if(msgT>0){ msgT-=dt; if(msgT<=0) msg=''; return; }
+    if(dir===-1){
+      if(holding) ball.y-=speed*dt;
+      const hit=hitRow();
+      if(hit){ dir=1; ball.y=hit.y+hit.h+R+1; sfxBlock(); }
+      else if(ball.y<=GOAL_Y){ goal(); }
+    } else if(dir===1){
+      ball.y+=BACK*dt;
+      const hit2=hitRow();
+      if(hit2){ dir=-1; speed=BASE; ball.y=hit2.y-R-1; sfxBlock(); }
+      else if(ball.y>=START_Y){ reset(); }
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    if(!started){ ctx.fillStyle='#16A34A'; ctx.fillRect(0,0,W,H); return; }
+    ctx.fillStyle='#22C55E'; ctx.fillRect(20,GOAL_Y-4,W-40,6);
+    ctx.font='20px sans-serif'; ctx.textAlign='center'; ctx.fillText('🥅',W/2,GOAL_Y-10);
+    ctx.fillStyle='#166534';
+    for(const row of rows){
+      for(let i=0;i<row.k;i++){
+        if(row.dead[i]) continue;
+        const cx=(row.off+i*W/row.k)%W;
+        for(let sh=-W;sh<=W;sh+=W){
+          const x=cx+sh-row.w/2;
+          if(x+row.w<0||x>W) continue;
+          ctx.beginPath(); ctx.roundRect(x,row.y,row.w,row.h,Math.min(8,row.h/2)); ctx.fill();
+        }
+      }
+    }
+    ctx.fillStyle='#38BDF8'; ctx.beginPath(); ctx.roundRect(W/2-34,START_Y+R+6,68,10,5); ctx.fill();
+    ctx.fillStyle='#2563EB'; ctx.beginPath(); ctx.arc(ball.x,ball.y,R,0,Math.PI*2); ctx.fill();
+    for(const e of fx){
+      const p=e.t/e.dur, nk=e.kind==='nuke';
+      const rad=(nk?16:11)+p*(nk?46:30);
+      ctx.globalAlpha=Math.max(0,1-p);
+      const gr=ctx.createRadialGradient(e.x,e.y,2,e.x,e.y,rad);
+      gr.addColorStop(0,nk?'#FFFFFF':'#FEF08A');
+      gr.addColorStop(0.5,nk?'#4ADE80':'#F97316');
+      gr.addColorStop(1,'rgba(239,68,68,0)');
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(e.x,e.y,rad,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    if(paused){
+      ctx.fillStyle='rgba(15,23,42,0.6)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#F1F5F9'; ctx.textAlign='center'; ctx.font='900 30px Nunito, sans-serif';
+      ctx.fillText('⏸ Paused',W/2,H/2);
+    }
+    if(flash>0){ ctx.fillStyle='rgba(255,255,255,'+(flash/0.7*0.75).toFixed(3)+')'; ctx.fillRect(0,0,W,H); }
+    if(msg){
+      const lines=msg.split('\n'), bh=lines.length===1?68:36+34+(lines.length-2)*28+22;
+      ctx.fillStyle='rgba(15,23,42,0.75)'; ctx.fillRect(0,H/2-bh/2,W,bh);
+      ctx.fillStyle='#FDE68A'; ctx.textAlign='center';
+      lines.forEach(function(l,i){
+        ctx.font=(i===0?'900 28px':'900 20px')+' Nunito, sans-serif';
+        const y=lines.length===1?H/2+10:(H/2-bh/2)+36+(i===0?0:34+(i-1)*28);
+        ctx.fillText(l,W/2,y);
+      });
+    }
+  }
+  function loop(t){
+    const dt=Math.min((t-last)/1000||0,0.033); last=t;
+    const sc=document.getElementById('start-screen');
+    if(sc && !sc.hidden){ if(started&&!paused) update(dt); draw(); }
+    requestAnimationFrame(loop);
+  }
+  function updateCtrls(){
+    const pb=document.getElementById('gm-pause'), rb=document.getElementById('gm-resume'), st=document.getElementById('gm-start');
+    if(pb) pb.classList.toggle('off', !started||paused);
+    if(rb) rb.classList.toggle('off', !(started&&paused));
+    if(st) st.hidden=started;
+  }
+  window.gmStart=function(){
+    if(started) return;
+    started=true; paused=false; reset(); build(); updateCtrls();
+    try{ playTone([523,659,784],[0.08,0.08,0.18],'sine',0.2); }catch(e){}
+  };
+  window.gmPause=function(){
+    if(!started||paused) return;
+    paused=true; holding=false; updateCtrls(); soundClick();
+  };
+  window.gmResume=function(){
+    if(!started||!paused) return;
+    paused=false; updateCtrls(); soundClick();
+  };
+  window.gmRestart=function(){
+    if(!loadVip()){ openVipModal(); return; }
+    if(!started) return;
+    paused=false; holding=false; msg=''; msgT=0; fx=[]; flash=0;
+    reset(); build(); updateCtrls();
+    try{ playTone([392,523,659],[0.08,0.08,0.16],'sine',0.2); }catch(e){}
+  };
+  window.gmStop=function(){
+    started=false; paused=false; holding=false; msg=''; msgT=0; fx=[]; flash=0;
+    reset(); updateCtrls();
+  };
+  build();
+  updateCtrls();
+  requestAnimationFrame(loop);
+})();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA1f5Hs0ATl2E2gZn94F2-OuxnHkRiMrYs",
+  authDomain: "twosome-647a8.firebaseapp.com",
+  projectId: "twosome-647a8",
+  storageBucket: "twosome-647a8.firebasestorage.app",
+  messagingSenderId: "553128872725",
+  appId: "1:553128872725:web:762a0ffe7cf1377a03771c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Firebase needs an email, so the username is turned into a hidden one.
+const toEmail = (u) => u + "@twosome.app";
+const nameOf = (user) => user.email.split("@")[0];
+let signingUp = false;
+
+async function startSession(user, fallback) {
+  try {
+    let data = fallback;
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (snap.exists()) data = snap.data();
+    if (!data) data = { username: nameOf(user), coins: 0, hands: 2, bombs: 0, nukes: 0, vip: false };
+    window.setAccountState(nameOf(user), data);
+    window.enterApp(nameOf(user));
+  } catch (e) {
+    console.error(e);
+    window.showAccError('login-error', window.fbMsg(e));
+  }
+}
+
+window.fb = {
+  async signup(username, password) {
+    signingUp = true;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, toEmail(username), password);
+      const data = { username: username, coins: 0, hands: 2, bombs: 0, nukes: 0, vip: false };
+      await setDoc(doc(db, "users", cred.user.uid), data);
+      signingUp = false;
+      await startSession(cred.user, data);
+    } finally { signingUp = false; }
+  },
+  async login(username, password) {
+    await signInWithEmailAndPassword(auth, toEmail(username), password);
+  },
+  logout() { signOut(auth); },
+  saveData(data) {
+    const u = auth.currentUser;
+    if (!u) return;
+    setDoc(doc(db, "users", u.uid), data, { merge: true }).catch(console.error);
+  }
+};
+
+window.fbMsg = function (e) {
+  const m = {
+    "auth/email-already-in-use": "That username is already taken.",
+    "auth/invalid-email": "Wrong username or password.",
+    "auth/invalid-credential": "Wrong username or password.",
+    "auth/user-not-found": "No account found with that username.",
+    "auth/wrong-password": "Wrong username or password.",
+    "auth/weak-password": "Password must be at least 6 characters.",
+    "auth/too-many-requests": "Too many attempts. Try again later.",
+    "auth/network-request-failed": "No internet connection.",
+    "permission-denied": "Server rules are blocking this. Check the Firestore Rules."
+  };
+  return m[e && e.code] || "Something went wrong. Try again.";
+};
+
+// Runs on page load and after login: restores the player on any device.
+onAuthStateChanged(auth, (user) => {
+  if (user && !signingUp) startSession(user);
+});
+</script>
+</body></html>
