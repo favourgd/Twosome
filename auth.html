@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 40px auto; padding: 0 16px; }
+    input, button { width: 100%; padding: 12px; margin: 6px 0; font-size: 16px; box-sizing: border-box; }
+    button { cursor: pointer; }
+    .link { background: none; border: none; color: #0366d6; text-decoration: underline; }
+    #message { color: #c00; min-height: 24px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- SIGN UP / LOGIN FORMS -->
+  <div id="authBox">
+    <h2 id="title">Login</h2>
+
+    <input id="username" class="hidden" type="text" placeholder="Username">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password (min 6 characters)">
+
+    <button id="submitBtn">Login</button>
+    <button id="toggleBtn" class="link">No account? Sign up</button>
+    <p id="message"></p>
+  </div>
+
+  <!-- SHOWN AFTER LOGIN -->
+  <div id="appBox" class="hidden">
+    <h2>Welcome, <span id="welcomeName"></span>!</h2>
+    <p>Your data is saved online, so it works on any device.</p>
+
+    <input id="note" type="text" placeholder="Type something to save">
+    <button id="saveBtn">Save</button>
+    <p>Saved note: <b id="savedNote">(none)</b></p>
+
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 1. PASTE YOUR FIREBASE CONFIG HERE (from Firebase Console > Project settings > Your apps)
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1f5Hs0ATl2E2gZn94F2-OuxnHkRiMrYs",
+      authDomain: "twosome-647a8.firebaseapp.com",
+      projectId: "twosome-647a8",
+      storageBucket: "twosome-647a8.firebasestorage.app",
+      messagingSenderId: "553128872725",
+      appId: "1:553128872725:web:762a0ffe7cf1377a03771c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const $ = (id) => document.getElementById(id);
+    let isSignUp = false;
+
+    // Switch between Login and Sign up
+    $("toggleBtn").onclick = () => {
+      isSignUp = !isSignUp;
+      $("title").textContent = isSignUp ? "Sign up" : "Login";
+      $("submitBtn").textContent = isSignUp ? "Create account" : "Login";
+      $("toggleBtn").textContent = isSignUp ? "Have an account? Login" : "No account? Sign up";
+      $("username").classList.toggle("hidden", !isSignUp);
+      $("message").textContent = "";
+    };
+
+    // Sign up or Login
+    $("submitBtn").onclick = async () => {
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      const username = $("username").value.trim();
+      $("message").textContent = "";
+
+      try {
+        if (isSignUp) {
+          if (!username) { $("message").textContent = "Please enter a username."; return; }
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          // Save the username (and other data) on the server
+          await setDoc(doc(db, "users", cred.user.uid), {
+            username: username,
+            email: email,
+            note: "",
+            createdAt: new Date().toISOString()
+          });
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        $("message").textContent = friendlyError(err.code);
+      }
+    };
+
+    // Save data for the logged-in user
+    $("saveBtn").onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      await updateDoc(doc(db, "users", user.uid), { note: $("note").value });
+      $("savedNote").textContent = $("note").value;
+      $("note").value = "";
+    };
+
+    // Logout
+    $("logoutBtn").onclick = () => signOut(auth);
+
+    // Runs automatically when someone logs in or out (works on any device)
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        $("welcomeName").textContent = data.username || user.email;
+        $("savedNote").textContent = data.note || "(none)";
+        $("authBox").classList.add("hidden");
+        $("appBox").classList.remove("hidden");
+      } else {
+        $("appBox").classList.add("hidden");
+        $("authBox").classList.remove("hidden");
+      }
+    });
+
+    function friendlyError(code) {
+      const errors = {
+        "auth/email-already-in-use": "This email already has an account.",
+        "auth/invalid-email": "Please enter a valid email.",
+        "auth/weak-password": "Password must be at least 6 characters.",
+        "auth/invalid-credential": "Wrong email or password.",
+        "auth/user-not-found": "No account found with this email.",
+        "auth/wrong-password": "Wrong email or password.",
+        "auth/too-many-requests": "Too many attempts. Try again later."
+      };
+      return errors[code] || "Something went wrong. Try again.";
+    }
+  </script>
+</body>
+</html>
